@@ -163,15 +163,15 @@ def result_means(df_games):
     df_games['team kills'] = (df_games['ally 1 kill'] + df_games['ally 2 kill'] + df_games['ally 3 kill']) / (df_games['team members']-1)
     df_games['team assists'] = (df_games['ally 1 assist'] + df_games['ally 2 assist'] + df_games['ally 3 assist']) / (df_games['team members']-1)
     df_games['team deaths'] = (df_games['ally 1 death'] + df_games['ally 2 death'] + df_games['ally 3 death']) / (df_games['team members']-1)
-    # df_games['team specials'] = (df_my_player_1_result['special'] + df_my_player_2_result['special'] + df_my_player_3_result['special']) / (df_games['team members']-1)
-    df_games['team paint points'] = (df_games['ally 1 paint_point'] + df_games['ally 2 paint_point'] + df_games['ally 3 paint_point']) / (df_games['team members']-1)
+    df_games['team sp_counts'] = (df_games['ally 1 sp_count'] + df_games['ally 2 sp_count'] + df_games['ally 3 sp_count']) / (df_games['team members']-1)
+    df_games['team paint_points'] = (df_games['ally 1 paint_point'] + df_games['ally 2 paint_point'] + df_games['ally 3 paint_point']) / (df_games['team members']-1)
 
     # average result enemy
     df_games['enemy kills'] = (df_games['enemy 1 kill'] + df_games['enemy 2 kill'] + df_games['enemy 3 kill'] + df_games['enemy 4 kill']) / df_games['enemy members']
     df_games['enemy assists'] = (df_games['enemy 1 assist'] + df_games['enemy 2 assist'] + df_games['enemy 3 assist'] + df_games['enemy 4 assist']) / df_games['enemy members']
     df_games['enemy deaths'] = (df_games['enemy 1 death'] + df_games['enemy 2 death'] + df_games['enemy 3 death'] + df_games['enemy 4 death']) / df_games['enemy members']
-    # df_games['team specials'] = (df_my_player_1_result['special'] + df_my_player_2_result['special'] + df_my_player_3_result['special']) / (df_games['team members']-1)
-    df_games['enemy paint points'] = (df_games['enemy 1 paint_point'] + df_games['enemy 2 paint_point'] + df_games['enemy 3 paint_point'] + df_games['enemy 4 paint_point']) / (df_games['team members']-1)
+    df_games['enemy sp_counts'] = (df_games['enemy 1 sp_count'] + df_games['enemy 2 sp_count'] + df_games['enemy 3 sp_count'] + df_games['enemy 4 sp_count']) / (df_games['team members']-1)
+    df_games['enemy paint_points'] = (df_games['enemy 1 paint_point'] + df_games['enemy 2 paint_point'] + df_games['enemy 3 paint_point'] + df_games['enemy 4 paint_point']) / (df_games['team members']-1)
     
     # kill / death & occupation of kill & death
     df_games['team k/d'] = df_games['team kills'] / df_games['team deaths']
@@ -181,3 +181,85 @@ def result_means(df_games):
     df_games['paint occupy'] = df_games['my paint_point'] / (df_games['my paint_point'] + df_games['team paint points']*(df_games['team members']-1))
 
     return df_games
+
+
+# レーダーチャートを作成するようの関数
+# https://analytics-note.xyz/programming/matplotlib-radar-chart/
+def make_rader_chart(rader_value, rgrids, title, labels, legend_names):
+    # print("rader_value(@defmake_rader_cahrt): ", rader_value.shape)
+    angles = np.linspace(0, 2*np.pi, len(labels)+1, endpoint=True)
+    fig = plt.figure(facecolor='w')
+    ax = fig.add_subplot(1, 1, 1, polar=True)
+
+    if len(legend_names) == 1:
+        ax.plot(angles, rader_value)
+        # レーダーチャート内を塗りつぶす
+        ax.fill(angles, rader_value, alpha=0.2)
+    else:
+        # レーダーチャートの線を引く
+        for i in range(rader_value.shape[0]):
+            ax.plot(angles, rader_value[i])
+            # レーダーチャート内を塗りつぶす
+            ax.fill(angles, rader_value[i], alpha=0.2)
+
+    # 項目ラベルの表示
+    ax.set_thetagrids(angles[:-1] * 180/np.pi, labels)
+    # 円形のメモリ線を消す
+    ax.set_rgrids([])
+    # 一番外側の円を消す
+    ax.spines['polar'].set_visible(False)
+    # 視点を上(来た)に変更
+    ax.set_theta_zero_location("N")
+    # 時計周りに変更
+    ax.set_theta_direction(-1)
+    # legendをつける
+    ax.legend(legend_names, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0)
+    # ax.legend(legend_names, prop = {"family" : "Ms Gothic"})
+
+    # 多角形の目盛線を引く
+    for grid_value in rgrids:
+        grid_values = [grid_value] * (len(labels)+1)
+        ax.plot(angles, grid_values, color="gray",  linewidth=0.5)
+
+    # メモリの値を表示する
+    for t in rgrids:
+        # xが偏角、yが絶対値でテキストの表示場所が指定される
+        ax.text(x=0, y=t, s=t)
+    # rの範囲を指定
+    ax.set_rlim([min(rgrids), max(rgrids)])
+
+    ax.set_title(title, pad=20)
+    # plt.plot()
+    return fig
+
+
+@st.cache(allow_output_mutation=True)
+def view_result_mean(df):
+    rgrids = [0, 2, 4, 6, 8, 10]
+    labels = ["kill", "death", "assist", "sp_count", "paint_point"]
+    my_labels = ["my kill", "my death", "my assist", "my sp_count", "my paint_point"]
+    team_labels = ["team kills", "team deaths", "team assists", "team sp_counts", "team paint_points"]
+    enemy_labels = ["enemy kills", "enemy deaths", "enemy assists", "enemy sp_counts", "enemy paint_points"]
+
+    my_value = np.zeros(len(labels))
+    for i in range(len(my_labels)):
+        my_value[i] = df[my_labels[i]].mean()
+    my_value[4] = my_value[4]/200
+    my_rader_value = np.concatenate([my_value, [my_value[0]]])
+
+    team_value = np.zeros(len(labels))
+    for i in range(len(team_labels)):
+        team_value[i] = df[team_labels[i]].mean()
+    team_value[4] = team_value[4]/200
+    team_rader_value = np.concatenate([team_value, [team_value[0]]])
+
+    enemy_value = np.zeros(len(labels))
+    for i in range(len(enemy_labels)):
+        enemy_value[i] = df[enemy_labels[i]].mean()
+    enemy_value[4] = enemy_value[4]/200
+    enemy_rader_value = np.concatenate([enemy_value, [enemy_value[0]]])
+
+    rader_value = np.vstack([my_rader_value, team_rader_value, enemy_rader_value])
+    fig = make_rader_chart(rader_value, rgrids, title="result mean", labels=labels, legend_names=["my result", "team result", "enemy result"])
+    return fig
+
