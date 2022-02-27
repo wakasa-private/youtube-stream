@@ -178,7 +178,7 @@ def result_means(df_games):
     df_games['enemy k/d'] = df_games['enemy kills'] / df_games['enemy deaths']
     df_games['kill occupy'] = df_games['my kill'] / (df_games['my kill'] + df_games['team kills']*(df_games['team members']-1))
     df_games['death occupy'] = df_games['my death'] / (df_games['my death'] + df_games['team deaths']*(df_games['team members']-1))
-    df_games['paint occupy'] = df_games['my paint_point'] / (df_games['my paint_point'] + df_games['team paint points']*(df_games['team members']-1))
+    df_games['paint occupy'] = df_games['my paint_point'] / (df_games['my paint_point'] + df_games['team paint_points']*(df_games['team members']-1))
 
     return df_games
 
