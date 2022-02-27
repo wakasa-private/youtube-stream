@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 import func_ikawidget2 as spla
 
 
