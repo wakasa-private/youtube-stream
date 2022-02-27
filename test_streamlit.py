@@ -1,14 +1,33 @@
 import streamlit as st
 import time
-# import numpy as np
-# import pandas as pd
-# from PIL import Image
+import json
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import func_ikawidget2 as spla
+
+
+filepath = "ikaWidgetJSON_20220219190342/"
+df_games = spla.read_spla_jsons(filepath)
+df_games = spla.result_means(df_games)
+
+'# Splatoon 2 Result Analyze'
+'## game result'
+st.dataframe(df_games)
+# st.dataframe(df_games)
+# data add
+
 
 
 st.title('streamlit 超入門')
 st.write('data frame')
 
-st.sidebar.write("## これがあなたのプロフィールだ！")
+st.sidebar.write("## データ設定")
+my_weapon = st.sidebar.selectbox("使用武器: ", df_games["my main"].unique())
+select_rule = st.sidebar.selectbox("ルール選択: ", df_games["rule"].unique())
+select_stage = st.sidebar.selectbox("ステージ: ", df_games["stage"].unique())
 text = st.text_input("あなたの趣味を教えてください")
 
 left_column, right_column = st.beta_columns(2)
@@ -28,56 +47,4 @@ condition = st.slider('あなたの今の調子は?', 0, 100, 5)
 'あなたの趣味は', text, 'です'
 'あんたの今の調子は', condition, 'でっせ'
 
-# latest_iteration = st.empty()
-# bar = st.progress(0)
-# for i in range(100):
-#     latest_iteration.text(f'Iteration {i+1}')
-#     bar.progress(i+1)
-#     time.sleep(0.01)
-# '''Done !'''
 
-
-# if st.checkbox('show image'):
-#     # 画像の表示
-#     img = Image.open('Image/MILAN.jpg')
-#     st.image(img, caption='MILAN', use_column_width=True)
-
-
-
-
-# # 新宿付近のプロット
-# df = pd.DataFrame(
-#     np.random.rand(100, 2)/[50, 50] + [35.69, 139.70],
-#     columns=['lat', 'lon']
-# )
-
-# st.dataframe(df.style.highlight_max(axis=1), width=400, height=400)
-# st.map(df)
-
-
-# """
-# # area chart
-# """
-# st.area_chart(df)
-# """
-# # bar chart
-# """
-# st.bar_chart(df)
-# st.latex(r'''
-#      a + ar + a r^2 + a r^3 + \cdots + a r^{n-1} =
-#      \sum_{k=0}^{n-1} ar^k =
-#      a \left(\frac{1-r^{n}}{1-r}\right)
-#      ''')
-
-# """
-# # 章
-# ## 説
-# ### こう
-
-# ```python
-# import numpy as np
-# import pandas as pd
-# import streamlit as st
-# ```
-
-# """
