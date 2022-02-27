@@ -44,7 +44,9 @@ condition_mode = df_games['mode']==select_mode if if_mode else pd.Series([True f
 condition_1 = ((condition_rule) & (condition_stage)) & ((condition_weapon) & (condition_mode))
 target_df_1 = df_games[condition_1]
 # st.dataframe(target_df_1.loc[:, target_columns])
-st.write('### 勝率', round(target_df_1['result'].mean() * 100, 2), "%")
+st.write('#### 試合数: ', len(target_df_1), "games")
+st.write('#### 勝率: ', round(target_df_1['result'].mean() * 100, 2), "%")
+st.write('#### k/d mean: ', round(target_df_1['my k/d'].mean(), 2))
 
 fig = plt.figure(figsize=(10, 4))
 ax = fig.add_subplot(1, 1, 1)
