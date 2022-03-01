@@ -76,7 +76,10 @@ thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 15, 1)
 expander_weapon = st.beta_expander('詳細武器データベース')
 df_weapon = df_weapon[(df_weapon['all games (ally)'] >= thresh_target_games) & (df_weapon['all games (enemy)'] >= thresh_target_games)]
 st.write(f'### マッチングした武器の種類数: {len(df_weapon)}')
-expander_weapon.dataframe(df_weapon)
+target_columns_weapon = expander_weapon.multiselect("select view data species",
+                                                    list(df_weapon),
+                                                    ['weapon', 'win rate (ally)', 'win rate (enemy)', 'kill', 'death', 'k/d', 'paint_point'])
+expander_weapon.dataframe(df_weapon.loc[target_columns_weapon])
 
 # マッチングした中で強い武器・弱い武器のリザルトを発表
 left_column_1, right_column_1 = st.beta_columns(2)
