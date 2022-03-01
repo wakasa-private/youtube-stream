@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -32,6 +33,7 @@ if_weapon = st.sidebar.checkbox("武器を考慮する?")
 if_mode = st.sidebar.checkbox("モードを考慮する?", value=True)
 if_rule = st.sidebar.checkbox("ルールを考慮する?")
 if_stage = st.sidebar.checkbox("ステージを考慮する?")
+if_condition = np.array([if_weapon, if_mode, if_rule, if_stage])
 
 
 condition_rule = df_games['rule']==select_rule if if_rule else pd.Series([True for x in range(len(df_games))])
@@ -72,7 +74,8 @@ df_weapon = spla.get_weapon_result(target_df_1)
 '# マッチングした武器のリザルト'
 
 plot_num = st.number_input('表示するのは上位: ', 3)
-thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 20, 1)
+thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 
+                                5 if np.any(if_condition) else 20, 1)
 expander_weapon = st.beta_expander('詳細武器データベース')
 df_weapon = df_weapon[(df_weapon['all games (ally)'] >= thresh_target_games) & (df_weapon['all games (enemy)'] >= thresh_target_games)]
 st.write(f'### マッチングした武器の種類数: {len(df_weapon)}')
