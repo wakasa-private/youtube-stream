@@ -77,7 +77,7 @@ expander_weapon = st.beta_expander('詳細武器データベース')
 df_weapon = df_weapon[(df_weapon['all games (ally)'] >= thresh_target_games) & (df_weapon['all games (enemy)'] >= thresh_target_games)]
 st.write(f'### マッチングした武器の種類数: {len(df_weapon)}')
 target_columns_weapon = expander_weapon.multiselect("select view data species",
-                                                    list(df_weapon),
+                                                    list(df_weapon.columns.values),
                                                     ['weapon', 'win rate (ally)', 'win rate (enemy)', 'kill', 'death', 'k/d', 'paint_point'])
 expander_weapon.dataframe(df_weapon.loc[target_columns_weapon])
 
