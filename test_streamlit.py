@@ -45,7 +45,7 @@ st.write('#### 試合数: ', len(target_df_1), "games")
 st.write('#### 勝率: ', round(target_df_1['result'].mean() * 100, 2), "%")
 st.write('#### k/d mean: ', round(target_df_1['my k/d'].mean(), 2))
 expander_games = st.beta_expander('詳細データベース')
-expander_games.dataframe(target_df_1)
+expander_games.dataframe(target_df_1.loc[:, target_columns])
 
 fig = plt.figure(figsize=(10, 4))
 ax = fig.add_subplot(1, 1, 1)
