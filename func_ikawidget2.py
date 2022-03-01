@@ -364,9 +364,11 @@ def get_strong_and_weak_weapon(df, if_lose=True, if_ally=True, plot_num=3):
     # リザルトを正規化
     for item in labels:
         if item =='death':
-            df[item] = round((df[item] - df[item].max()) * 100 / (df[item].min() - df[item].max()), 2)
+            # df[item] = round((df[item] - df[item].max()) * 100 / (df[item].min() - df[item].max()), 2)
+            df[item] = 50 - 20 * (df[item] - df[item].mean())/df[item].std()
         else:
-            df[item] = round((df[item] - df[item].min()) * 100 / (df[item].max() - df[item].min()), 2)
+            # df[item] = round((df[item] - df[item].min()) * 100 / (df[item].max() - df[item].min()), 2)
+            df[item] = 50 + 20 * (df[item] - df[item].mean())/df[item].std()
     
     if if_ally:
         tmp_df = df.sort_values(by='win rate (ally)', ascending=if_lose).head(plot_num)
@@ -385,6 +387,10 @@ def get_strong_and_weak_weapon(df, if_lose=True, if_ally=True, plot_num=3):
             value = tmp_df.iloc[i+1].values
             tmp_rader_value =np.concatenate([value, [value[0]]])
             rader_value = np.vstack([rader_value, tmp_rader_value])
+    
+    # 0-100の間の値に収める
+    rader_value[np.where(rader_value < 0)] = 0
+    rader_value[np.where(rader_value > 100)] = 100
             
     return make_rader_chart(rader_value, rgrids, title, labels, legend_names)
         

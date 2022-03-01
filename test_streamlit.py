@@ -72,7 +72,7 @@ df_weapon = spla.get_weapon_result(target_df_1)
 '# マッチングした武器のリザルト'
 
 plot_num = st.number_input('表示するのは上位: ', 3)
-thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 15, 1)
+thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 20, 1)
 expander_weapon = st.beta_expander('詳細武器データベース')
 df_weapon = df_weapon[(df_weapon['all games (ally)'] >= thresh_target_games) & (df_weapon['all games (enemy)'] >= thresh_target_games)]
 st.write(f'### マッチングした武器の種類数: {len(df_weapon)}')
