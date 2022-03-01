@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 import seaborn as sns
 import streamlit as st
 import json
@@ -190,7 +191,7 @@ def result_means(df_games):
 def make_rader_chart(rader_value, rgrids, title, labels, legend_names):
     # print("rader_value(@defmake_rader_cahrt): ", rader_value.shape)
     angles = np.linspace(0, 2*np.pi, len(labels)+1, endpoint=True)
-    fig = plt.figure(facecolor='w')
+    fig = plt.figure(figsize=(7, 7), facecolor='w')
     ax = fig.add_subplot(1, 1, 1, polar=True)
 
     if len(legend_names) == 1:
@@ -234,7 +235,7 @@ def make_rader_chart(rader_value, rgrids, title, labels, legend_names):
     # plt.plot()
     return fig
 
-
+# 入力したデータの自分，味方，敵のリザルト平均を取得
 @st.cache(allow_output_mutation=True)
 def view_result_mean(df):
     rgrids = [0, 2, 4, 6, 8, 10]
@@ -264,4 +265,129 @@ def view_result_mean(df):
     rader_value = np.vstack([my_rader_value, team_rader_value, enemy_rader_value])
     fig = make_rader_chart(rader_value, rgrids, title="result mean", labels=labels, legend_names=["my result", "team result", "enemy result"])
     return fig
+
+# Sub マッチングした別の人の武器ごとのリザルト取得
+def sub_get_weapon_kill_death(main_weapon, result, weapon_list, output):
+    target_index = np.where(weapon_list==main_weapon)[0]
+    output[target_index, 0] += result[0]
+    output[target_index, 1] += result[1]
+    output[target_index, 2] += result[2]
+    output[target_index, 3] += result[3]
+    output[target_index, 4] += result[4]
+    output[target_index, 5] += result[5]
+    output[target_index, 6] += 1
+    return output
+
+# マッチングした別の人の武器ごとのリザルト取得
+@st.cache(allow_output_mutation=True)
+def get_weapon_result(df):
+    # get team and enemy member result divided by main weapon
+    df_team_weapons = pd.concat([df['ally 1 main'], df['ally 2 main'], df['ally 3 main']])
+    # df_enemy_weapons = pd.concat([df['enemy 1 main'], df['enemy 2 main'], df['enemy 3 main'], df['enemy 4 main']])
+    weapon_list = df_team_weapons.unique()
+
+    # ['負け数', '勝ち数', '試合数', '勝率']
+    team_weapon_result = np.zeros((len(weapon_list), 4))
+    enemy_weapon_result = np.zeros((len(weapon_list), 4))
+
+    # 一緒になった武器の勝ち数・負け数を取得
+    for i in range(len(df)):
+        tmp = df.iloc[i]
+        tmp_result = tmp['result']
+        my_weapon_list = [tmp["ally 1 main"], tmp["ally 2 main"], tmp["ally 3 main"]]
+        ene_weapon_list = [tmp["enemy 1 main"], tmp["enemy 2 main"], tmp["enemy 3 main"], tmp["enemy 4 main"]]
+        set_my_weapon = set(my_weapon_list)
+        set_ene_weapon = set(ene_weapon_list)
+
+        for my_weapon in set_my_weapon:
+            team_weapon_result[np.where(weapon_list==my_weapon)[0], tmp_result] += 1
+        for ene_weapon in set_ene_weapon:
+            enemy_weapon_result[np.where(weapon_list==ene_weapon)[0], tmp_result] += 1
+    
+    # 勝率を計算
+    for i in range(team_weapon_result.shape[0]):
+        team_weapon_result[i, 2] = team_weapon_result[i, 1] + team_weapon_result[i, 0]
+        team_weapon_result[i, 3] = team_weapon_result[i, 1] / team_weapon_result[i, 2]
+        enemy_weapon_result[i, 2] = enemy_weapon_result[i, 1] + enemy_weapon_result[i, 0]
+        enemy_weapon_result[i, 3] = enemy_weapon_result[i, 1] / enemy_weapon_result[i, 2]
+
+    df_weapon_result = pd.DataFrame(weapon_list, columns=['weapon'])
+    df_weapon_result = pd.concat([df_weapon_result,
+                                  pd.DataFrame(team_weapon_result[:, 2:],
+                                               columns=["all games (ally)", "win rate (ally)"])],
+                                 axis=1)
+    df_weapon_result = pd.concat([df_weapon_result,
+                                  pd.DataFrame(enemy_weapon_result[:, 2:],
+                                               columns=["all games (enemy)", "win rate (enemy)"])],
+                                 axis=1)
+
+    # マッチングした武器のkill数 death数 special数 paint_point数の平均
+    # svedata = [kill, death, k/d, assist, special, all_k/d, count]
+    weapon_kd_result = np.zeros((len(df_team_weapons.unique()), 7))
+    for i in range(len(df)):
+        # 算出条件
+        tmp = df.iloc[i]
+        tmp_result_1 = [tmp['ally 1 kill'], tmp['ally 1 death'], tmp['ally 1 k/d'], tmp['ally 1 assist'], tmp['ally 1 paint_point'], tmp['ally 1 sp_count']]
+        tmp_result_2 = [tmp['ally 2 kill'], tmp['ally 2 death'], tmp['ally 2 k/d'], tmp['ally 2 assist'], tmp['ally 2 paint_point'], tmp['ally 2 sp_count']]
+        tmp_result_3 = [tmp['ally 3 kill'], tmp['ally 3 death'], tmp['ally 3 k/d'], tmp['ally 3 assist'], tmp['ally 3 paint_point'], tmp['ally 3 sp_count']]
+        tmp_result_4 = [tmp['enemy 1 kill'], tmp['enemy 1 death'], tmp['enemy 1 k/d'], tmp['enemy 1 assist'], tmp['enemy 1 paint_point'], tmp['enemy 1 sp_count']]
+        tmp_result_5 = [tmp['enemy 2 kill'], tmp['enemy 2 death'], tmp['enemy 2 k/d'], tmp['enemy 2 assist'], tmp['enemy 2 paint_point'], tmp['enemy 2 sp_count']]
+        tmp_result_6 = [tmp['enemy 3 kill'], tmp['enemy 3 death'], tmp['enemy 3 k/d'], tmp['enemy 3 assist'], tmp['enemy 3 paint_point'], tmp['enemy 3 sp_count']]
+        tmp_result_7 = [tmp['enemy 4 kill'], tmp['enemy 4 death'], tmp['enemy 4 k/d'], tmp['enemy 4 assist'], tmp['enemy 4 paint_point'], tmp['enemy 4 sp_count']]
+
+        # get result
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["ally 1 main"], tmp_result_1, weapon_list, weapon_kd_result)
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["ally 2 main"], tmp_result_2, weapon_list, weapon_kd_result)
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["ally 3 main"], tmp_result_3, weapon_list, weapon_kd_result)
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["enemy 1 main"], tmp_result_4, weapon_list, weapon_kd_result)
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["enemy 2 main"], tmp_result_5, weapon_list, weapon_kd_result)
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["enemy 3 main"], tmp_result_6, weapon_list, weapon_kd_result)
+        weapon_kd_result = sub_get_weapon_kill_death(tmp["enemy 3 main"], tmp_result_7, weapon_list, weapon_kd_result)
+
+    for i in range(6): 
+        weapon_kd_result[:, i] =  weapon_kd_result[:, i]/  weapon_kd_result[:, 6]
+
+    df_weapon_result = pd.concat([df_weapon_result,
+                                  pd.DataFrame(weapon_kd_result[:, :-1],
+                                               columns=["kill", "death", "k/d", "assist", "paint_point", "special"])],
+                                 axis=1)
+    return df_weapon_result
+
+
+# 強い武器・弱い武器のレーダーチャートを出力
+def get_strong_and_weak_weapon(df, if_lose=True, if_ally=True, plot_num=3):
+    # 回線落ちのデータは削除 (回線落ちデータは塗がゼロのはずなので)
+    df = df.drop(df.index[df['weapon']=='バカ'])
+    
+    # target_df_weapon = df[(df['all games (ally)'] >= thresh_game) & (df['all games (enemy)'] >= thresh_game)]
+    labels = ["kill", "death", "k/d", "assist", "paint_point", "special"]
+    # リザルトを正規化
+    for item in labels:
+        if item =='death':
+            df[item] = round((df[item] - df[item].max()) * 100 / (df[item].min() - df[item].max()), 2)
+        else:
+            df[item] = round((df[item] - df[item].min()) * 100 / (df[item].max() - df[item].min()), 2)
+    
+    if if_ally:
+        tmp_df = df.sort_values(by='win rate (ally)', ascending=if_lose).head(plot_num)
+        title = '味方に来ると負ける武器' if if_lose else '味方に来ると勝てる武器'
+    else:
+        tmp_df = df.sort_values(by='win rate (enemy)', ascending=if_lose).head(plot_num)
+        title = '敵に来ると負ける武器' if if_lose else '敵に来ると勝てる武器'
+    
+    legend_names = tmp_df['weapon'].unique()
+    tmp_df = tmp_df.loc[:, labels]
+    rgrids = [0, 20, 40, 60, 80, 100]
+    value = tmp_df.iloc[0].values
+    rader_value =np.concatenate([value, [value[0]]])
+    if plot_num > 1:
+        for i in range(plot_num-1):
+            value = tmp_df.iloc[i+1].values
+            tmp_rader_value =np.concatenate([value, [value[0]]])
+            rader_value = np.vstack([rader_value, tmp_rader_value])
+            
+    return make_rader_chart(rader_value, rgrids, title, labels, legend_names)
+        
+    
+    
 

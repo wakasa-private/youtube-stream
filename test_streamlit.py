@@ -1,12 +1,9 @@
-import weakref
 import streamlit as st
-import time
-import json
-import os
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+# 自作関数
 import func_ikawidget2 as spla
 
 
@@ -47,6 +44,8 @@ target_df_1 = df_games[condition_1]
 st.write('#### 試合数: ', len(target_df_1), "games")
 st.write('#### 勝率: ', round(target_df_1['result'].mean() * 100, 2), "%")
 st.write('#### k/d mean: ', round(target_df_1['my k/d'].mean(), 2))
+expander_games = st.beta_expander('詳細データベース')
+expander_games.dataframe(target_df_1)
 
 fig = plt.figure(figsize=(10, 4))
 ax = fig.add_subplot(1, 1, 1)
@@ -68,25 +67,33 @@ st.pyplot(fig)
 fig2 = spla.view_result_mean(target_df_1)
 st.pyplot(fig2)
 
-'\n# Streamlit 超入門'
+# マッチングした武器のリザルト
+df_weapon = spla.get_weapon_result(target_df_1)
+'# マッチングした武器のリザルト'
 
-text = st.text_input("あなたの趣味を教えてください")
+plot_num = st.number_input('表示するのは上位: ', 3)
+thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 15, 1)
+expander_weapon = st.beta_expander('詳細武器データベース')
+df_weapon = df_weapon[(df_weapon['all games (ally)'] >= thresh_target_games) & (df_weapon['all games (enemy)'] >= thresh_target_games)]
+st.write(f'### マッチングした武器の種類数: {len(df_weapon)}')
+expander_weapon.dataframe(df_weapon)
 
-left_column, right_column = st.beta_columns(2)
-button = left_column.button("右カラムに文字")
-expander = st.beta_expander('問い合わせ')
-expander.write("いえーーー")
-if button:
-    right_column.write("ここは左カラムです")
+# マッチングした中で強い武器・弱い武器のリザルトを発表
+left_column_1, right_column_1 = st.beta_columns(2)
+fig_my_win = spla.get_strong_and_weak_weapon(df_weapon, if_lose=False, if_ally=True, plot_num=plot_num)
+fig_my_lose = spla.get_strong_and_weak_weapon(df_weapon, if_lose=True, if_ally=True, plot_num=plot_num)
+fig_ene_win = spla.get_strong_and_weak_weapon(df_weapon, if_lose=False, if_ally=False, plot_num=plot_num)
+fig_ene_lose = spla.get_strong_and_weak_weapon(df_weapon, if_lose=True, if_ally=False, plot_num=plot_num)
+left_column_1.write('### 強い武器')
+left_column_1.write('味方に来ると勝てる武器')
+left_column_1.pyplot(fig_my_win)
+left_column_1.write('敵に来ると負ける武器')
+left_column_1.pyplot(fig_ene_lose)
+right_column_1.write('### 弱い武器')
+right_column_1.write('味方に来ると負ける武器')
+right_column_1.pyplot(fig_my_lose)
+right_column_1.write('敵に来ると勝てる武器')
+right_column_1.pyplot(fig_ene_win)
 
-option = st.selectbox(
-    'あなたが好きな数字を教えてください',
-    list(range(1,11))
-    )
-condition = st.slider('あなたの今の調子は?', 0, 100, 5)
-
-'あなたの好きな数字は', option, 'です'
-'あなたの趣味は', text, 'です'
-'あんたの今の調子は', condition, 'でっせ'
 
 
