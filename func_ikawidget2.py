@@ -405,7 +405,7 @@ def get_kill_death_result_by_stage(df_games):
         plot_data[i, 0] = tmp_df['my kill'].mean()
         plot_data[i, 1] = tmp_df['my death'].mean()
         plot_data[i, 2] = tmp_df['result'].mean()
-        plot_data[i, 2] = tmp_df['result'].std() * 1/2
+        plot_data[i, 3] = tmp_df['result'].std() * 1/2
         i += 1
         
     good_at_index = np.where(plot_data[:, 2]>0.5)[0]
