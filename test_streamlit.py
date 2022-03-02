@@ -72,10 +72,10 @@ st.pyplot(fig2)
 # マッチングした武器のリザルト
 df_weapon = spla.get_weapon_result(target_df_1)
 '# マッチングした武器のリザルト'
-
 plot_num = st.number_input('表示するのは上位: ', 3)
 thresh_target_games = st.slider('マッチング数の閾値:', 1, 100, 
-                                5 if np.any(if_condition) else 20, 1)
+                                int(20-4*if_condition.sum()), 1)
+                                # 5 if np.any(if_condition) else 20, 1)
 expander_weapon = st.beta_expander('詳細武器データベース')
 df_weapon = df_weapon[(df_weapon['all games (ally)'] >= thresh_target_games) & (df_weapon['all games (enemy)'] >= thresh_target_games)]
 st.write(f'### マッチングした武器の種類数: {len(df_weapon)}')
@@ -100,6 +100,10 @@ right_column_1.write('味方に来ると負ける武器')
 right_column_1.pyplot(fig_my_lose)
 right_column_1.write('敵に来ると勝てる武器')
 right_column_1.pyplot(fig_ene_win)
+
+st.write('# stageごとのkill/death 勝率')
+fig_stage = spla.get_kill_death_result_by_stage(target_df_1)
+st.pyplot(fig_stage)
 
 
 

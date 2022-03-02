@@ -394,6 +394,48 @@ def get_strong_and_weak_weapon(df, if_lose=True, if_ally=True, plot_num=3):
             
     return make_rader_chart(rader_value, rgrids, title, labels, legend_names)
         
+@st.cache(allow_output_mutation=True)
+def get_kill_death_result_by_stage(df_games):
+    stage_names = df_games['stage'].unique()
+    plot_data = np.zeros((len(stage_names), 3))
     
+    i = 0
+    for stage in stage_names:
+        tmp_df = df_games[df_games['stage']==stage]
+        plot_data[i, 0] = tmp_df['my kill'].mean()
+        plot_data[i, 1] = tmp_df['my death'].mean()
+        plot_data[i, 2] = tmp_df['result'].mean()
+        i += 1
+        
+    good_at_index = np.where(plot_data[:, 2]>0.5)[0]
+    
+    x = np.arange(plot_data.shape[0])
+    fig = plt.figure(figsize=(15, 5))
+    # kill数 death数のプロット
+    ax1 = fig.add_subplot(111)
+    ax1.bar(x, plot_data[:, 0], align="edge", width=-0.3)
+    ax1.bar(x, plot_data[:, 1], align="edge", width=0.3)
+    ax1.grid()
+    ax1.legend(['kill', 'death'])
+    ax1.set_ylabel("kill & death num")
+    plt.xticks(x, stage_names, rotation=45)
+    
+    # 勝率50%を超えているステージだけ分かりやすく
+    labels = ax1.get_xticklabels()
+    if len(good_at_index) > 0:
+        for stage_index in good_at_index:
+            labels[stage_index].set_color('tab:red')
+    
+    # 勝率のプロット
+    ax2 = ax1.twinx()
+    ax2.plot(x, plot_data[:, 2]*100, "cD--")
+    ax2.plot([x[0], x[-1]], [50, 50], "k-")
+    ax2.set_ylabel("win rate (%)")
+    ax2.spines['right'].set_color('red')
+    ax2.grid(color='r', linestyle='dotted')
+    ax2.tick_params(axis = 'y', colors ='red')
+    ax2.set_ylim([0, 100])
+    
+    return fig
     
 
