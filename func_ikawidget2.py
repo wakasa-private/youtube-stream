@@ -397,7 +397,7 @@ def get_strong_and_weak_weapon(df, if_lose=True, if_ally=True, plot_num=3):
 @st.cache(allow_output_mutation=True)
 def get_kill_death_result_by_stage(df_games):
     stage_names = df_games['stage'].unique()
-    plot_data = np.zeros((len(stage_names), 4))
+    plot_data = np.zeros((len(stage_names), 6))
     
     i = 0
     for stage in stage_names:
