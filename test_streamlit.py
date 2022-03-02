@@ -60,12 +60,18 @@ ax.set_xlabel('kill & death num')
 ax.set_xlim([0, 6])
 # ax.set_ylabel('death num')
 ax.grid()
+st.write('### 自分 味方チーム 敵チームのk/dの分布')
 st.pyplot(fig)
+
+st.write('### stageごとのkill/death 勝率')
+fig_stage = spla.get_kill_death_result_by_stage(target_df_1)
+st.pyplot(fig_stage)
 
 # view_target_fig2 = st.multiselect("rader view", 
 #                 list(target_df_1.columns.unique()),
 #                 default=["my kill", "team kills", "enemy kills", "my death", "team deaths", "enemy deaths"]
 # )
+st.write('### 自分 味方チーム 敵チームのリザルト')
 fig2 = spla.view_result_mean(target_df_1)
 st.pyplot(fig2)
 
@@ -102,9 +108,6 @@ right_column_1.pyplot(fig_my_lose)
 right_column_1.write('敵に来ると勝てる武器')
 right_column_1.pyplot(fig_ene_win)
 
-st.write('# stageごとのkill/death 勝率')
-fig_stage = spla.get_kill_death_result_by_stage(target_df_1)
-st.pyplot(fig_stage)
 
 
 
