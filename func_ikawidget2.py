@@ -423,6 +423,7 @@ def get_kill_death_result_by_stage(df_games):
     ax1.grid()
     ax1.legend(['kill', 'death'])
     ax1.set_ylabel("kill & death num")
+    ax1.set_ylim([0, 10])
     plt.xticks(x, stage_names, rotation=45)
     
     # 勝率50%を超えているステージだけ分かりやすく
