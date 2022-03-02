@@ -397,7 +397,7 @@ def get_strong_and_weak_weapon(df, if_lose=True, if_ally=True, plot_num=3):
 @st.cache(allow_output_mutation=True)
 def get_kill_death_result_by_stage(df_games):
     stage_names = df_games['stage'].unique()
-    plot_data = np.zeros((len(stage_names), 3))
+    plot_data = np.zeros((len(stage_names), 4))
     
     i = 0
     for stage in stage_names:
@@ -405,6 +405,7 @@ def get_kill_death_result_by_stage(df_games):
         plot_data[i, 0] = tmp_df['my kill'].mean()
         plot_data[i, 1] = tmp_df['my death'].mean()
         plot_data[i, 2] = tmp_df['result'].mean()
+        plot_data[i, 2] = tmp_df['result'].std() * 1/2
         i += 1
         
     good_at_index = np.where(plot_data[:, 2]>0.5)[0]
@@ -413,8 +414,8 @@ def get_kill_death_result_by_stage(df_games):
     fig = plt.figure(figsize=(15, 5))
     # kill数 death数のプロット
     ax1 = fig.add_subplot(111)
-    ax1.bar(x, plot_data[:, 0], align="edge", width=-0.3)
-    ax1.bar(x, plot_data[:, 1], align="edge", width=0.3)
+    ax1.bar(x, plot_data[:, 0], align="edge", width=-0.3, color='indianred')
+    ax1.bar(x, plot_data[:, 1], align="edge", width=0.3, color='paleturquoise')
     ax1.grid()
     ax1.legend(['kill', 'death'])
     ax1.set_ylabel("kill & death num")
@@ -428,12 +429,14 @@ def get_kill_death_result_by_stage(df_games):
     
     # 勝率のプロット
     ax2 = ax1.twinx()
-    ax2.plot(x, plot_data[:, 2]*100, "cD--")
+    ax2.plot(x, plot_data[:, 2]*100, color='indigo', linestyle='dashed')
+    ax2.errorbar(x, plot_data[:, 2]*100, plot_data[:, 3]*100, capsize=5, fmt='D', markersize=7,
+                 ecolor='indigo', markeredgecolor ='indigo', color='w', linewidth=3)
     ax2.plot([x[0], x[-1]], [50, 50], "k-")
     ax2.set_ylabel("win rate (%)")
     ax2.spines['right'].set_color('red')
     ax2.grid(color='r', linestyle='dotted')
-    ax2.tick_params(axis = 'y', colors ='red')
+    ax2.tick_params(axis = 'y', colors ='indigo')
     ax2.set_ylim([0, 100])
     
     return fig

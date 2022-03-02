@@ -84,6 +84,7 @@ target_columns_weapon = expander_weapon.multiselect("select view data species",
                                                     ['weapon', 'win rate (ally)', 'win rate (enemy)', 'kill', 'death', 'k/d', 'paint_point'])
 expander_weapon.dataframe(df_weapon.loc[:, target_columns_weapon])
 
+
 # マッチングした中で強い武器・弱い武器のリザルトを発表
 left_column_1, right_column_1 = st.beta_columns(2)
 fig_my_win = spla.get_strong_and_weak_weapon(df_weapon, if_lose=False, if_ally=True, plot_num=plot_num)
